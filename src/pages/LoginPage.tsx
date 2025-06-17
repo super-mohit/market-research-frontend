@@ -44,8 +44,8 @@ export const LoginPage: React.FC = () => {
       <form onSubmit={handleSubmit} className="card p-8 w-full max-w-sm space-y-6 relative z-10 backdrop-blur-sm bg-white/80 border border-white/20">
         <div className="text-center">
           <img src={supervityLogo} alt="Supervity Logo" className="h-12 w-auto mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Welcome back to Supervity</h1>
-          <p className="text-slate-600 text-sm">Unlock powerful market intelligence</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Intelligence Agent Login</h1>
+          <p className="text-slate-600 text-sm">Access your market intelligence platform</p>
         </div>
         
         {error && (

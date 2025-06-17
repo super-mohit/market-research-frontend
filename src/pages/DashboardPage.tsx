@@ -21,7 +21,7 @@ import { PageTitle, SectionTitle, CardTitle, BodyText, CaptionText } from '../co
 const TABS = [
   { id: 'report', label: 'Executive Report', icon: FileText },
   { id: 'data', label: 'Data Explorer', icon: Database },
-  { id: 'chat', label: 'AI Analyst Chat', icon: Brain },
+  { id: 'chat', label: 'Ask The Agent', icon: Brain },
 ];
 
 export const DashboardPage: React.FC = () => {

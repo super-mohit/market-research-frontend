@@ -52,7 +52,7 @@ export const SignupPage: React.FC = () => {
       <form onSubmit={handleSubmit} className="card p-8 w-full max-w-sm space-y-6 relative z-10 backdrop-blur-sm bg-white/80 border border-white/20">
         <div className="text-center">
           <img src={supervityLogo} alt="Supervity Logo" className="h-12 w-auto mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Join Supervity</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Agent Account</h1>
           <p className="text-slate-600 text-sm">Start your market intelligence journey</p>
         </div>
         

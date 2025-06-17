@@ -2,7 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DashboardHubPage } from './pages/DashboardHubPage';
 import { NewResearchPage } from './pages/NewResearchPage';
-import { ResearchPage } from './pages/ResearchPage';
+import { SimplifiedResearchPage } from './pages/SimplifiedResearchPage';
 import { DashboardPage } from './pages/DashboardPage';
 
 // +++ NEW IMPORTS +++
@@ -23,7 +23,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<DashboardHubPage />} />
             <Route path="/new-research" element={<NewResearchPage />} />
-            <Route path="/research/:jobId" element={<ResearchPage />} />
+            <Route path="/research/:jobId" element={<SimplifiedResearchPage />} />
             <Route path="/dashboard/:jobId" element={<DashboardPage />} />
           </Route>
           

@@ -9,7 +9,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
-  title = "Market Intelligence Dashboard", 
+  title = "Intelligence Agent", 
   children
 }) => {
   return (
@@ -22,6 +22,9 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3">
             <img src={supervityLogo} alt="Supervity Logo" className="h-8 w-auto" />
+            <div>
+              <h1 className="text-lg font-bold text-foreground leading-tight">{title}</h1>
+            </div>
           </Link>
           
           {children && (

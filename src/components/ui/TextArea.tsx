@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { clsx } from 'clsx';
 
 interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -8,7 +8,7 @@ interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
   charLimit?: number;
 }
 
-export const TextArea: React.FC<TextAreaProps> = ({
+export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({
   label,
   error,
   hint,
@@ -16,7 +16,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
   className,
   value,
   ...props
-}) => {
+}, ref) => {
   const currentLength = typeof value === 'string' ? value.length : 0;
   const isNearLimit = charLimit ? currentLength > charLimit * 0.8 : false;
   const isOverLimit = charLimit ? currentLength > charLimit : false;
@@ -39,6 +39,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
         </div>
       )}
       <textarea
+        ref={ref}
         className={clsx(
           'w-full px-4 py-3 bg-background border border-input rounded-lg',
           'text-foreground placeholder-muted-foreground/70 resize-none scrollbar-thin',
@@ -59,4 +60,6 @@ export const TextArea: React.FC<TextAreaProps> = ({
       )}
     </div>
   );
-};
+});
+
+TextArea.displayName = 'TextArea';

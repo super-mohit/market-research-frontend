@@ -392,7 +392,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
         transition={{ delay: 0.8 }}
         className="text-center mt-8 text-muted-foreground text-sm"
       >
-        Powered by Supervity AI research agents • Secure & confidential
+        Powered by the Supervity Intelligence Engine • Secure & confidential
       </motion.div>
     </motion.div>
   );

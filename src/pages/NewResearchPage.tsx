@@ -43,10 +43,10 @@ export const NewResearchPage: React.FC = () => {
             className="text-center mb-8"
           >
             <h1 className="text-3xl font-bold text-foreground mb-2">
-              What market intelligence do you need today?
+              New Intelligence Report
             </h1>
             <p className="text-muted-foreground text-lg">
-              Describe your research objectives and let our AI agents do the work
+              What would you like the Agent to research today?
             </p>
           </motion.div>
 

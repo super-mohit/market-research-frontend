@@ -98,8 +98,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     id: 'initial-bot-message',
     type: 'assistant',
     content: isRagReady
-      ? "Hello! I'm the **Supervity Analyst** 🤖\n\nI've analyzed your research report and ingested all the extracted data. I can help you explore insights, answer questions about the findings, and dive deeper into any aspect of your market intelligence research.\n\nWhat would you like to know?"
-      : "Hello! I'm the **Supervity Analyst** 🤖\n\nI'm currently processing your research data and will be ready to answer questions shortly. Please wait while I analyze all the findings and sources.",
+      ? "I have analyzed the research report and am ready to assist you. How can I help you explore the findings and insights?"
+      : "I'm currently analyzing your research data and will be ready to answer questions shortly. Please wait while I process all the findings and sources.",
     timestamp: new Date(),
   };
 
@@ -108,9 +108,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin pr-2 mb-4">
+      <div className="flex-1 overflow-y-auto scrollbar-thin pr-2 mb-4 max-h-0">
         {displayMessages.length === 1 ? ( // Only the initial message is present
-          <div className="flex flex-col items-center justify-center h-full text-center py-8">
+          <div className="flex flex-col items-center text-center py-8 min-h-full justify-center">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -127,11 +127,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 />
               )}
             </motion.div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">Meet the Supervity Analyst</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">Chat with the Intelligence Agent</h3>
             <p className="text-muted-foreground text-sm mb-6 max-w-md leading-relaxed">
               {isRagReady 
-                ? "Your AI research assistant is ready! Ask me anything about your market intelligence findings, competitive landscape, or emerging trends."
-                : "Setting up your personalized AI analyst... This process analyzes all your research data to provide contextual insights."
+                ? "I've analyzed the report and data. Ask me any follow-up questions about your market intelligence findings."
+                : "Setting up your personalized Intelligence Agent... This process analyzes all your research data to provide contextual insights."
               }
             </p>
             {!isRagReady && (
