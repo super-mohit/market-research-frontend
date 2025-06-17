@@ -22,30 +22,7 @@ export const useSubmitResearch = () => {
   });
 };
 
-// Job Status Query with Smart Polling
-export const useJobStatus = (jobId: string | undefined, enabled = true) => {
-  return useQuery({
-    queryKey: QUERY_KEYS.RESEARCH_STATUS(jobId || ''),
-    queryFn: () => researchApi.getJobStatus(jobId!),
-    enabled: enabled && !!jobId,
-    refetchInterval: (data) => {
-      // Poll every 3 seconds if job is still running
-      if (data?.status === 'running' || data?.status === 'pending') {
-        return 3000;
-      }
-      // Stop polling when completed or failed
-      return false;
-    },
-    refetchIntervalInBackground: true,
-    staleTime: 1000, // Consider data stale after 1 second
-    retry: (failureCount, error: any) => {
-      // Don't retry on 404 (job not found)
-      if (error?.response?.status === 404) return false;
-      // Retry up to 3 times for other errors
-      return failureCount < 3;
-    },
-  });
-};
+
 
 // Job Result Query
 export const useJobResult = (jobId: string | undefined, enabled = true) => {
@@ -64,25 +41,7 @@ export const useJobResult = (jobId: string | undefined, enabled = true) => {
   });
 };
 
-// RAG Info Query
-export const useRAGInfo = (jobId: string | undefined, enabled = true) => {
-  return useQuery({
-    queryKey: QUERY_KEYS.RAG_INFO(jobId || ''),
-    queryFn: () => researchApi.getRAGInfo(jobId!),
-    enabled: enabled && !!jobId,
-    // --- NEW: Add smart polling for RAG status ---
-    refetchInterval: (data) => {
-      // If RAG is not yet uploaded, poll every 5 seconds.
-      if (data?.rag_status !== 'uploaded') {
-        return 5000;
-      }
-      // Otherwise, stop polling.
-      return false;
-    },
-    refetchIntervalInBackground: true,
-    staleTime: 0, // Always get the latest status during polling
-  });
-};
+
 
 // RAG Query Mutation
 export const useRAGQuery = () => {

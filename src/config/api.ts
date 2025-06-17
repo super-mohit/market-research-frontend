@@ -5,6 +5,7 @@ export const API_CONFIG = {
   TIMEOUT: parseInt(import.meta.env.VITE_TIMEOUT || '300000'),
   ENDPOINTS: {
     RESEARCH: '/api/research',
+    RESEARCH_STREAM: (jobId: string) => `/api/research/stream/${jobId}`, // <-- ADD THIS
     RESEARCH_STATUS: (jobId: string) => `/api/research/status/${jobId}`,
     RESEARCH_RESULT: (jobId: string) => `/api/research/result/${jobId}`,
     RAG_QUERY: '/api/rag/query',

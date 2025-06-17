@@ -1,16 +1,18 @@
 // src/pages/DashboardPage.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Database, MessageSquare, Loader, AlertTriangle, Brain } from 'lucide-react';
+import { FileText, Database, Brain, Loader, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Header } from '../components/layout/Header';
 import { ReportViewer } from '../components/dashboard/ReportViewer';
 import { StructuredDataViewer } from '../components/dashboard/StructuredDataViewer';
 import { ChatInterface } from '../components/dashboard/ChatInterface';
-import { useJobResult, useRAGInfo } from '../hooks/api/useResearchQueries';
+import { useJobResult, QUERY_KEYS } from '../hooks/api/useResearchQueries';
 import { useChatStore } from '../store/useChatStore';
+import { researchApi, ResearchResultResponse } from '../services/researchApi'; // Import API service and type
 
 const TABS = [
   { id: 'report', label: 'Executive Report', icon: FileText },
@@ -20,64 +22,132 @@ const TABS = [
 
 export const DashboardPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
-  const [activeTab, setActiveTab] = useState('report');
+  if (!jobId) {
+      return <div className="text-center p-8">Invalid Job ID.</div>;
+  }
+
+  const [activeTab, setActiveTab] = React.useState('report');
+  const queryClient = useQueryClient();
   
-  const { data: jobResult, isLoading, isError, error } = useJobResult(jobId);
-  const { data: ragInfo, isLoading: isRagLoading } = useRAGInfo(jobId, !isLoading); // Fetch RAG info as soon as job ID is known
-
-  // --- MODIFIED: Removed setRAGCollection from destructuring ---
+  const { 
+    data: jobResult, 
+    isLoading, 
+    isError, 
+  } = useJobResult(jobId, true); // Always enable the query
+  
   const { messagesByJob, setCurrentJobId, sendMessage, isTyping } = useChatStore();
+  
+  // --- DERIVED STATE ---
+  // No more local useState for ragStatus/canQuery. Derive directly from the query data.
+  const ragInfo = jobResult?.metadata?.ragInfo;
+  const ragStatus = ragInfo?.rag_status || 'checking';
+  const canQuery = ragInfo?.can_query === true;
+  const isChatDisabled = !ragInfo?.upload_requested || !canQuery;
 
-  // This useEffect is now only for setting the current job ID
   useEffect(() => {
-    if (jobId) {
-      setCurrentJobId(jobId);
-    }
+    setCurrentJobId(jobId);
   }, [jobId, setCurrentJobId]);
 
-  // --- MODIFIED: This function is now responsible for the logic ---
-  const handleSendMessage = (message: string) => {
-    if (!jobId) return;
+  // --- CORRECTED POLLING LOGIC ---
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | undefined;
 
-    // Check for RAG info directly before sending
-    if (!ragInfo?.can_query || !ragInfo.collection_name) {
-      toast.error("AI Analyst is not ready. Please wait a moment and try again.");
+    // The function that performs a single poll
+    const pollForRagUpdate = async () => {
+      if (!jobId) return;
+      
+      try {
+        // Use the dedicated, correct API service call
+        const ragInfoUpdate = await researchApi.getRAGInfo(jobId);
+        
+        // Update the main React Query cache. This will cause the component to re-render with new data.
+        queryClient.setQueryData(
+          QUERY_KEYS.RESEARCH_RESULT(jobId),
+          (oldData: ResearchResultResponse | undefined) => {
+            if (!oldData || oldData.metadata?.ragInfo?.rag_status === ragInfoUpdate.rag_status) {
+              return oldData; // No change, prevent unnecessary re-renders
+            }
+            console.log(`✅ RAG status updated to: ${ragInfoUpdate.rag_status}. Updating cache.`);
+            return {
+              ...oldData,
+              metadata: {
+                ...oldData.metadata,
+                ragInfo: { // Merge new RAG info into the existing metadata
+                  ...oldData.metadata.ragInfo,
+                  rag_status: ragInfoUpdate.rag_status,
+                  collection_name: ragInfoUpdate.collection_name,
+                  can_query: ragInfoUpdate.can_query,
+                  rag_error: ragInfoUpdate.rag_error,
+                },
+              },
+            };
+          }
+        );
+
+        // If the RAG process is finished, stop polling
+        if (ragInfoUpdate.rag_status === 'uploaded' || ragInfoUpdate.rag_status === 'failed') {
+          if (intervalId) clearInterval(intervalId);
+          if (ragInfoUpdate.rag_status === 'uploaded') {
+            toast.success('AI Analyst is now ready!');
+          } else {
+            toast.error(`AI Analyst setup failed: ${ragInfoUpdate.rag_error || 'Unknown error'}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error polling for RAG updates:', error);
+        if (intervalId) clearInterval(intervalId); // Stop polling on error
+      }
+    };
+
+    // Start polling only if the RAG status is pending
+    if (jobId && ragStatus === 'pending_upload') {
+      console.log('RAG upload is pending, initiating polling...');
+      intervalId = setInterval(pollForRagUpdate, 5000);
+    }
+
+    // Cleanup function to clear the interval when the component unmounts or dependencies change
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [jobId, ragStatus, queryClient]); // Dependencies ensure this effect runs when needed
+
+
+  const handleSendMessage = (message: string) => {
+    const collectionName = jobResult?.metadata?.ragInfo?.collection_name;
+    if (!collectionName || !canQuery) {
+      toast.error("AI Analyst is not ready yet. Please wait for the knowledge base to finish uploading.");
       return;
     }
-    
-    // Call the updated action with all necessary info
-    sendMessage(jobId, ragInfo.collection_name, message);
+    sendMessage(jobId, collectionName, message);
   };
 
-  // --- THIS IS THE BULLETPROOF LOADING/ERROR HANDLING ---
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <Loader className="w-12 h-12 text-lime-400 animate-spin mb-4" />
         <h1 className="text-xl text-foreground">Loading your intelligence report...</h1>
-        <p className="text-muted-foreground">This should only take a moment.</p>
       </div>
     );
   }
 
-  if (isError) {
+  if (isError || !jobResult) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-center p-4">
         <AlertTriangle className="w-12 h-12 text-destructive mb-4" />
         <h1 className="text-2xl font-bold text-foreground mb-2">Failed to Load Report</h1>
-        <p className="text-muted-foreground mb-6 max-w-md">We couldn't retrieve the data for this research job. It may have failed or the ID is incorrect.</p>
-        <p className="text-sm text-muted-foreground mb-6">Error: {error?.message || 'Unknown error'}</p>
+        <p className="text-muted-foreground mb-6 max-w-md">
+          We couldn't retrieve data for this job. It may have failed or the ID is incorrect.
+        </p>
         <Link to="/" className="px-6 py-3 bg-lime-500 text-navy-900 font-semibold rounded-lg hover:bg-lime-400 transition-colors">
           Start a New Research
         </Link>
       </div>
     );
   }
-  // --- END OF BULLETPROOFING ---
 
   const renderTabContent = () => {
-    if (!jobResult) return null;
-    
     switch (activeTab) {
       case 'report':
         return <ReportViewer markdown={jobResult.final_report_markdown || ''} />;
@@ -85,16 +155,14 @@ export const DashboardPage: React.FC = () => {
         return <StructuredDataViewer data={jobResult.extracted_data} />;
       case 'chat':
         return (
-          // --- MODIFIED: Improved layout for chat interface ---
           <div className="flex justify-center h-full">
             <div className="w-full max-w-4xl h-[calc(100vh-15rem)]">
               <ChatInterface
-                jobId={jobId!}
-                messages={messagesByJob[jobId!] || []}
-                // --- MODIFIED: Pass the updated handler ---
+                jobId={jobId}
+                messages={messagesByJob[jobId] || []}
                 onSendMessage={handleSendMessage}
                 isTyping={isTyping}
-                isRagReady={ragInfo?.can_query}
+                isRagReady={canQuery}
               />
             </div>
           </div>
@@ -109,29 +177,52 @@ export const DashboardPage: React.FC = () => {
       <Header title="Research Dashboard" />
       
       <main className="flex-1 max-w-screen-xl w-full mx-auto px-6 py-8 flex flex-col">
-        {/* --- MODIFIED: Center the tab navigation --- */}
         <div className="flex justify-center border-b border-border mb-8">
           <div className="flex items-center space-x-2">
-            {TABS.map(tab => {
-            const isChatDisabled = tab.id === 'chat' && !ragInfo?.can_query;
-            return (
+            {TABS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                disabled={isChatDisabled}
+                disabled={tab.id === 'chat' && isChatDisabled}
                 className={`flex items-center space-x-2 px-4 py-3 text-base font-medium border-b-2 transition-all duration-200
                   ${activeTab === tab.id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}
-                  ${isChatDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                  ${tab.id === 'chat' && isChatDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
               >
                 <tab.icon className="w-5 h-5" />
                 <span>{tab.label}</span>
-                {tab.id === 'chat' && isRagLoading && !ragInfo && <Loader className="w-4 h-4 ml-2 animate-spin" />}
+                {tab.id === 'chat' && ragInfo?.upload_requested && (
+                  <>
+                    {ragStatus === 'pending_upload' && (
+                      <div className="w-3 h-3 border border-yellow-500 border-t-transparent rounded-full animate-spin ml-2" />
+                    )}
+                    {ragStatus === 'uploaded' && (
+                      <div className="w-3 h-3 bg-lime-500 rounded-full ml-2" />
+                    )}
+                    {ragStatus === 'failed' && (
+                      <div className="w-3 h-3 bg-red-500 rounded-full ml-2" />
+                    )}
+                  </>
+                )}
+                {tab.id === 'chat' && !ragInfo?.upload_requested && (
+                  <span className="text-xs text-muted-foreground ml-2">(Disabled)</span>
+                )}
               </button>
-                          )
-            })}
+            ))}
           </div>
         </div>
+        
+        {activeTab === 'chat' && ragInfo?.upload_requested && !canQuery && (
+          <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-center">
+            <p className="text-yellow-600 text-sm">
+              {ragStatus === 'pending_upload' 
+                ? '🔄 Setting up AI Analyst knowledge base... This may take a few minutes.'
+                : ragStatus === 'failed'
+                ? '❌ Failed to set up AI Analyst. Chat is not available.'
+                : '⏳ AI Analyst is being prepared...'}
+            </p>
+          </div>
+        )}
         
         <div className="flex-1">
           <AnimatePresence mode="wait">

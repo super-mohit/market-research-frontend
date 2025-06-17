@@ -7,10 +7,12 @@ interface ResearchState {
   currentJobId?: string;
   jobData?: ResearchResult;
   jobStatus: 'idle' | 'pending' | 'running' | 'completed' | 'failed';
+  isJobCompleted: boolean;
   
   // Processing state
   loadingStages: LoadingStage[];
   currentStage?: string;
+  logs: string[]; // <-- ADD THIS
   
   // Form data persistence
   lastQuery?: QueryFormData;
@@ -23,6 +25,9 @@ interface ResearchState {
   resetLoadingStages: () => void;
   clearJob: () => void;
   saveQuery: (query: QueryFormData) => void;
+  addLog: (log: string) => void; // <-- ADD THIS
+  setJobCompleted: () => void; // <-- ADD THIS
+  resetJobStatus: () => void; // ADD THIS
 }
 
 const defaultLoadingStages: LoadingStage[] = [
@@ -61,13 +66,18 @@ const defaultLoadingStages: LoadingStage[] = [
 export const useResearchStore = create<ResearchState>((set, get) => ({
   // Initial state
   jobStatus: 'idle',
+  isJobCompleted: false,
   loadingStages: defaultLoadingStages,
+  logs: [], // <-- ADD THIS
   
   // Actions
   setCurrentJob: (jobId) => {
     set({ 
       currentJobId: jobId, 
       jobStatus: 'pending',
+      isJobCompleted: false,
+      // Reset logs for new job
+      logs: [`[CLIENT] Research job ${jobId} initiated. Connecting to live feed...`],
       loadingStages: defaultLoadingStages.map(stage => ({ ...stage, status: 'pending' }))
     });
   },
@@ -122,6 +132,19 @@ export const useResearchStore = create<ResearchState>((set, get) => ({
     set({ loadingStages: defaultLoadingStages.map(stage => ({ ...stage, status: 'pending' })) });
   },
   
+  addLog: (log) => { // <-- ADD THIS ACTION
+    set((state) => ({ logs: [...state.logs, log] }));
+  },
+  
+  setJobCompleted: () => { // <-- ADD THIS ACTION
+    console.log('🎉 Setting job as completed in store');
+    set(state => ({
+      isJobCompleted: true,
+      jobStatus: 'completed',
+      loadingStages: state.loadingStages.map(s => ({...s, status: 'completed', progress: 100}))
+    }))
+  },
+
   clearJob: () => {
     set({
       currentJobId: undefined,
@@ -133,4 +156,8 @@ export const useResearchStore = create<ResearchState>((set, get) => ({
   },
   
   saveQuery: (query) => set({ lastQuery: query }),
+
+  resetJobStatus: () => {
+    set({ isJobCompleted: false, jobStatus: 'idle' });
+  },
 }));
