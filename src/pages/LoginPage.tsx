@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/useAuthStore'; 
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
@@ -14,42 +15,67 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     try {
       await login(email, password);
+      toast.success('Welcome back! Successfully logged in.');
       navigate('/'); // Navigate to dashboard on success
     } catch (error) {
-      alert('Login Failed!'); // Replace with toast notifications
+      toast.error('Login failed. Please check your credentials and try again.');
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-50">
-      <form onSubmit={handleSubmit} className="card p-8 w-full max-w-sm space-y-6">
-        <h2 className="text-2xl font-bold text-center">Login</h2>
+    <div className="flex items-center justify-center min-h-screen relative overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
+        <div className="absolute inset-0 opacity-[0.03]">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#3b82f6" strokeWidth="1"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </svg>
+        </div>
+        <div className="absolute top-10 left-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-600/5 rounded-full blur-3xl"></div>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="card p-8 w-full max-w-sm space-y-6 relative z-10 backdrop-blur-sm bg-white/80 border border-white/20">
+        <div className="text-center">
+          <img src="/supervity-logo.svg" alt="Supervity Logo" className="h-12 w-auto mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Welcome back to Supervity</h1>
+          <p className="text-slate-600 text-sm">Unlock powerful market intelligence</p>
+        </div>
         
         {error && (
-          <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+          <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
             {error}
           </div>
         )}
         
-        <Input 
-          label="Email" 
-          type="email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          required 
-        />
-        <Input 
-          label="Password" 
-          type="password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-        />
+        <div className="space-y-4">
+          <Input 
+            label="Email" 
+            type="email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+          />
+          <Input 
+            label="Password" 
+            type="password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+          />
+        </div>
+        
         <Button type="submit" className="w-full" isLoading={isLoading}>
-          Login
+          Sign In
         </Button>
-        <p className="text-center text-sm">
-          No account? <Link to="/signup" className="text-primary hover:underline">Sign up</Link>
+        
+        <p className="text-center text-sm text-slate-600">
+          No account? <Link to="/signup" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">Sign up</Link>
         </p>
       </form>
     </div>

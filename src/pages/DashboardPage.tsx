@@ -15,6 +15,8 @@ import { useJobResult, QUERY_KEYS } from '../hooks/api/useResearchQueries';
 import { useChatStore } from '../store/useChatStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { researchApi, ResearchResultResponse } from '../services/researchApi'; // Import API service and type
+import { Skeleton, SkeletonReportViewer } from '../components/ui/Skeleton';
+import { PageTitle, SectionTitle, CardTitle, BodyText, CaptionText } from '../components/ui/Typography';
 
 const TABS = [
   { id: 'report', label: 'Executive Report', icon: FileText },
@@ -136,9 +138,39 @@ export const DashboardPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        <Loader className="w-12 h-12 text-lime-400 animate-spin mb-4" />
-        <h1 className="text-xl text-foreground">Loading your intelligence report...</h1>
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header title="Research Dashboard">
+          <div className="flex items-center space-x-2">
+            <Skeleton variant="button" className="w-24 h-8" />
+            <Skeleton variant="button" className="w-16 h-8" />
+          </div>
+        </Header>
+
+        <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
+          {/* Header skeleton */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="space-y-2">
+              <Skeleton variant="title" className="w-80 h-8" />
+              <Skeleton variant="text" className="w-96" />
+            </div>
+            <Skeleton variant="circle" className="w-12 h-12" />
+          </div>
+
+          {/* Tab navigation skeleton */}
+          <div className="border-b border-border mb-8">
+            <nav className="flex space-x-8">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-2 pb-4">
+                  <Skeleton variant="circle" className="w-5 h-5" />
+                  <Skeleton variant="text" className="w-24" />
+                </div>
+              ))}
+            </nav>
+          </div>
+
+          {/* Content skeleton */}
+          <SkeletonReportViewer />
+        </main>
       </div>
     );
   }
@@ -147,10 +179,10 @@ export const DashboardPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-center p-4">
         <AlertTriangle className="w-12 h-12 text-destructive mb-4" />
-        <h1 className="text-2xl font-bold text-foreground mb-2">Failed to Load Report</h1>
-        <p className="text-muted-foreground mb-6 max-w-md">
+        <SectionTitle className="mb-2">Failed to Load Report</SectionTitle>
+        <BodyText color="secondary" className="mb-6 max-w-md">
           We couldn't retrieve data for this job. It may have failed or the ID is incorrect.
-        </p>
+        </BodyText>
         <Link to="/" className="px-6 py-3 bg-lime-500 text-navy-900 font-semibold rounded-lg hover:bg-lime-400 transition-colors">
           Start a New Research
         </Link>
@@ -200,35 +232,33 @@ export const DashboardPage: React.FC = () => {
       </Header>
       
       <main className="flex-1 max-w-screen-xl w-full mx-auto px-6 py-8 flex flex-col">
+        {/* Page Header */}
+        <div className="mb-8">
+          <PageTitle className="mb-2">
+            Market Intelligence Report
+          </PageTitle>
+          <BodyText color="secondary">
+            Research findings for: "{jobResult.original_query}"
+          </BodyText>
+        </div>
+
         <div className="flex justify-center border-b border-border mb-8">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             {TABS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 disabled={tab.id === 'chat' && isChatDisabled}
-                className={`flex items-center space-x-2 px-4 py-3 text-base font-medium border-b-2 transition-all duration-200
-                  ${activeTab === tab.id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}
-                  ${tab.id === 'chat' && isChatDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-                `}
+                className={`flex items-center space-x-2 px-4 py-3 text-base font-medium border-b-2 transition-all duration-200 rounded-t-lg ${
+                  activeTab === tab.id 
+                    ? 'border-lime-500 text-foreground bg-lime-500/10' 
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-slate-100/50'
+                } ${tab.id === 'chat' && isChatDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <tab.icon className="w-5 h-5" />
                 <span>{tab.label}</span>
-                {tab.id === 'chat' && ragInfo?.upload_requested && (
-                  <>
-                    {ragStatus === 'pending_upload' && (
-                      <div className="w-3 h-3 border border-yellow-500 border-t-transparent rounded-full animate-spin ml-2" />
-                    )}
-                    {ragStatus === 'uploaded' && (
-                      <div className="w-3 h-3 bg-lime-500 rounded-full ml-2" />
-                    )}
-                    {ragStatus === 'failed' && (
-                      <div className="w-3 h-3 bg-red-500 rounded-full ml-2" />
-                    )}
-                  </>
-                )}
-                {tab.id === 'chat' && !ragInfo?.upload_requested && (
-                  <span className="text-xs text-muted-foreground ml-2">(Disabled)</span>
+                {tab.id === 'chat' && isChatDisabled && (
+                  <CaptionText color="secondary" className="ml-2">(Disabled)</CaptionText>
                 )}
               </button>
             ))}
@@ -237,13 +267,11 @@ export const DashboardPage: React.FC = () => {
         
         {activeTab === 'chat' && ragInfo?.upload_requested && !canQuery && (
           <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-center">
-            <p className="text-yellow-600 text-sm">
+            <BodyText color="warning">
               {ragStatus === 'pending_upload' 
-                ? '🔄 Setting up AI Analyst knowledge base... This may take a few minutes.'
-                : ragStatus === 'failed'
-                ? '❌ Failed to set up AI Analyst. Chat is not available.'
-                : '⏳ AI Analyst is being prepared...'}
-            </p>
+                ? 'Setting up AI Analyst (this may take a few minutes)...'
+                : 'AI Analyst is not available for this report.'}
+            </BodyText>
           </div>
         )}
         

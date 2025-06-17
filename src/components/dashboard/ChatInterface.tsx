@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader } from 'lucide-react';
+import { Send, User, Loader, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -26,6 +26,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [lastUserMessage, setLastUserMessage] = useState('');
 
   const suggestedQuestions = [
     "What are the key findings about market size?",
@@ -37,6 +38,30 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Track last user message for editing
+  useEffect(() => {
+    const userMessages = messages.filter(m => m.type === 'user');
+    if (userMessages.length > 0) {
+      setLastUserMessage(userMessages[userMessages.length - 1].content);
+    }
+  }, [messages]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Up arrow to edit last message (only when input is empty and focused)
+      if (e.key === 'ArrowUp' && inputValue === '' && document.activeElement === inputRef.current) {
+        e.preventDefault();
+        if (lastUserMessage) {
+          setInputValue(lastUserMessage);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [inputValue, lastUserMessage]);
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
@@ -72,8 +97,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     id: 'initial-bot-message',
     type: 'assistant',
     content: isRagReady
-      ? "I have analyzed the research report and all extracted data. How can I help you?"
-      : "I am currently being initialized with the research data. I'll be ready to answer your questions shortly.",
+      ? "Hello! I'm the **Supervity Analyst** 🤖\n\nI've analyzed your research report and ingested all the extracted data. I can help you explore insights, answer questions about the findings, and dive deeper into any aspect of your market intelligence research.\n\nWhat would you like to know?"
+      : "Hello! I'm the **Supervity Analyst** 🤖\n\nI'm currently processing your research data and will be ready to answer questions shortly. Please wait while I analyze all the findings and sources.",
     timestamp: new Date(),
   };
 
@@ -88,26 +113,38 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="w-16 h-16 bg-lime-500/20 rounded-full flex items-center justify-center mb-4"
+              className="w-20 h-20 bg-lime-500/20 rounded-2xl flex items-center justify-center mb-6 relative"
             >
-              <Bot className="w-8 h-8 text-lime-400" />
+              <div className="w-16 h-16 bg-lime-500 rounded-xl flex items-center justify-center">
+                <img src="/supervity-logomark.svg" alt="Supervity Analyst" className="w-10 h-10" />
+              </div>
+              {!isRagReady && (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 border-2 border-transparent border-t-lime-500 rounded-2xl"
+                />
+              )}
             </motion.div>
-            <h3 className="text-foreground font-medium mb-2">Chat with your Research</h3>
-            <p className="text-muted-foreground text-sm mb-6 max-w-xs">
+            <h3 className="text-xl font-semibold text-foreground mb-2">Meet the Supervity Analyst</h3>
+            <p className="text-muted-foreground text-sm mb-6 max-w-md leading-relaxed">
               {isRagReady 
-                ? "Ask questions about your research findings and get instant insights."
-                : "Setting up chat capabilities... This will be ready shortly."
+                ? "Your AI research assistant is ready! Ask me anything about your market intelligence findings, competitive landscape, or emerging trends."
+                : "Setting up your personalized AI analyst... This process analyzes all your research data to provide contextual insights."
               }
             </p>
             {!isRagReady && (
-              <div className="mb-4 text-orange-400 text-xs">
-                RAG system is initializing. Chat will be available once ready.
+              <div className="mb-6 px-4 py-2 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                  <span>Processing research data...</span>
+                </div>
               </div>
             )}
             
-            <div className="space-y-2 w-full">
+            <div className="space-y-3 w-full max-w-lg">
               <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                Suggested Questions
+                Try asking me about
               </p>
               {suggestedQuestions.map((question, index) => (
                 <motion.button
@@ -116,9 +153,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   onClick={() => setInputValue(question)}
-                  className="w-full text-left p-3 text-sm text-muted-foreground bg-muted hover:bg-slate-200 rounded-lg transition-colors border hover:border-lime-500/30"
+                  disabled={!isRagReady}
+                  className={`w-full text-left p-4 text-sm rounded-xl transition-all border ${
+                    isRagReady 
+                      ? 'text-foreground bg-white hover:bg-lime-50 hover:border-lime-500/50 hover:shadow-sm' 
+                      : 'text-muted-foreground bg-slate-50 border-slate-200 cursor-not-allowed'
+                  }`}
                 >
-                  {question}
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-lime-500 rounded-full flex-shrink-0"></div>
+                    <span>{question}</span>
+                  </div>
                 </motion.button>
               ))}
             </div>
@@ -139,22 +184,22 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                     message.type === 'user' 
                       ? 'bg-lime-500 text-navy-900' 
-                      : 'bg-blue-soft/20 text-blue-soft'
+                      : 'bg-lime-500'
                   }`}>
                     {message.type === 'user' ? (
                       <User className="w-4 h-4" />
                     ) : (
-                      <Bot className="w-4 h-4" />
+                      <img src="/supervity-logomark.svg" alt="Supervity Analyst" className="w-5 h-5" />
                     )}
                   </div>
                   
                   <div className={`flex-1 max-w-lg ${
                     message.type === 'user' ? 'text-right' : ''
                   }`}>
-                    <div className={`inline-block p-3 rounded-lg text-sm text-left ${
+                    <div className={`inline-block p-4 rounded-xl text-sm text-left ${
                       message.type === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-foreground'
+                        ? 'bg-lime-500 text-white'
+                        : 'bg-white border border-slate-200'
                     }`}>
                       {message.type === 'assistant' ? (
                         <div className="markdown-content">
@@ -166,11 +211,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         <p className="whitespace-pre-wrap">{message.content}</p>
                       )}
                       
-                      {/* Safe Citation Rendering */}
+                      {/* Enhanced Citation Rendering */}
                       {message.citations && Array.isArray(message.citations) && message.citations.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/20">
-                          <h4 className="text-xs font-bold mb-1">Sources:</h4>
-                          <ul className="space-y-1 text-xs">
+                        <div className="mt-4 pt-3 border-t border-slate-200">
+                          <h4 className="text-xs font-semibold text-slate-600 mb-2 flex items-center">
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Sources cited:
+                          </h4>
+                          <div className="space-y-2">
                             {message.citations.map((citation: any, index: number) => {
                               // Safety checks for citation object
                               if (!citation || typeof citation !== 'object') {
@@ -182,68 +230,58 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                               const displayName = documentName || createSafeUrl(source) || 'Document';
 
                               return (
-                                <li key={index} className="flex items-center space-x-2">
-                                  <span className="flex-shrink-0 w-4 h-4 bg-lime-500/20 text-lime-400 rounded-full flex items-center justify-center text-[10px]">
+                                <div key={index} className="flex items-start space-x-2 text-xs">
+                                  <div className="flex-shrink-0 w-5 h-5 bg-lime-500/20 text-lime-700 rounded flex items-center justify-center text-[10px] font-medium mt-0.5">
                                     {index + 1}
-                                  </span>
-                                  {source.startsWith('http') ? (
-                                    <a 
-                                      href={source} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="truncate hover:underline"
-                                      title={source}
-                                    >
-                                      {displayName}
-                                    </a>
-                                  ) : (
-                                    <span className="truncate" title={source}>
-                                      {displayName}
-                                    </span>
-                                  )}
-                                </li>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    {source.startsWith('http') ? (
+                                      <a 
+                                        href={source} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline block truncate font-medium"
+                                        title={source}
+                                      >
+                                        {displayName}
+                                      </a>
+                                    ) : (
+                                      <span className="text-slate-600 block truncate" title={source}>
+                                        {displayName}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
                               );
                             })}
-                          </ul>
+                          </div>
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {format(message.timestamp, 'HH:mm')}
+                    
+                    <p className="text-xs text-muted-foreground mt-1 px-1">
+                      {message.type === 'user' ? 'You' : 'Supervity Analyst'} • {format(message.timestamp, 'HH:mm')}
                     </p>
                   </div>
                 </motion.div>
               ))}
             </AnimatePresence>
             
+            {/* Typing Indicator */}
             {isTyping && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-start space-x-3"
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-blue-soft/20 text-blue-soft">
-                  <Bot className="w-4 h-4" />
+                <div className="flex-shrink-0 w-8 h-8 bg-lime-500 rounded-full flex items-center justify-center">
+                  <img src="/supervity-logomark.svg" alt="Supervity Analyst" className="w-5 h-5" />
                 </div>
-                <div className="flex-1">
-                  <div className="inline-block p-3 rounded-lg bg-muted">
-                    <div className="flex space-x-1">
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 1, repeat: Infinity, delay: 0 }}
-                        className="w-2 h-2 bg-gray-400 rounded-full"
-                      />
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
-                        className="w-2 h-2 bg-gray-400 rounded-full"
-                      />
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
-                        className="w-2 h-2 bg-gray-400 rounded-full"
-                      />
-                    </div>
+                <div className="bg-white border border-slate-200 rounded-xl p-4">
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
                   </div>
                 </div>
               </motion.div>
@@ -256,25 +294,32 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       {/* Input */}
       <div className="border-t border-border pt-4">
-        <div className="flex space-x-3">
+        <div className="flex items-end space-x-3">
           <div className="flex-1">
             <TextArea
               ref={inputRef}
+              placeholder={isRagReady ? "Ask the Supervity Analyst anything about your research..." : "Please wait for the analyst to be ready..."}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={isRagReady ? "Ask a question about your research..." : "Chat will be available once RAG is ready..."}
+              disabled={!isRagReady}
               rows={2}
               className="resize-none"
-              disabled={!isRagReady}
             />
+            {isRagReady && (
+              <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                <span>Press Enter to send, Shift+Enter for new line</span>
+                {lastUserMessage && (
+                  <span>Press ↑ to edit last message</span>
+                )}
+              </div>
+            )}
           </div>
           <Button
             onClick={handleSend}
-            disabled={!inputValue.trim() || isTyping || !isRagReady}
-            variant="primary"
+            disabled={!inputValue.trim() || !isRagReady}
             size="md"
-            className="self-end"
+            className="px-4"
           >
             <Send className="w-4 h-4" />
           </Button>

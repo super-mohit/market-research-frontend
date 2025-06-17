@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { Header } from '../components/layout/Header';
 import { QueryForm } from '../components/forms/QueryForm';
 import { useSubmitResearch } from '../hooks/api/useResearchQueries';
 import { useResearchStore } from '../store/useResearchStore';
@@ -28,9 +30,32 @@ export const NewResearchPage: React.FC = () => {
   };
 
   return (
-    <QueryForm
-      onSubmit={handleSubmit}
-      isLoading={isPending}
-    />
+    <div className="min-h-screen bg-slate-50">
+      <Header title="New Research" />
+      
+      <div className="flex items-center justify-center p-6">
+        <div className="w-full max-w-4xl">
+          {/* Page Title */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-center mb-8"
+          >
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              What market intelligence do you need today?
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Describe your research objectives and let our AI agents do the work
+            </p>
+          </motion.div>
+
+          <QueryForm
+            onSubmit={handleSubmit}
+            isLoading={isPending}
+          />
+        </div>
+      </div>
+    </div>
   );
 }; 

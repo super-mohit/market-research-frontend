@@ -10,8 +10,8 @@
   }
   
   body {
-    /* Use a very light gray for the body to make white cards pop */
-    @apply bg-slate-50 text-foreground font-sans antialiased;
+    /* Enhanced with a subtle gradient for a premium feel */
+    @apply bg-gradient-to-br from-slate-50 to-slate-100 text-foreground font-sans antialiased;
     font-feature-settings: "cv11", "ss01";
     font-variation-settings: "opsz" 32;
   }
@@ -22,9 +22,14 @@
 }
 
 @layer components {
-  /* This will be our standard card style */
+  /* Enhanced card style with subtle shadows and hover effects */
   .card {
-    @apply bg-card text-card-foreground border rounded-xl shadow-sm;
+    @apply bg-card text-card-foreground border rounded-xl shadow-sm transition-all duration-300;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+  }
+  
+  .card:hover {
+    @apply shadow-md border-slate-300;
   }
 
   /* Scrollbar for light theme */

@@ -5,6 +5,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { SkeletonReportViewer } from '../ui/Skeleton';
+import { SectionTitle, Label } from '../ui/Typography';
 
 interface ReportViewerProps {
   markdown: string;
@@ -67,17 +69,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="animate-pulse">
-            <div className={`h-4 bg-gray-700 rounded ${
-              i === 0 ? 'w-3/4' : i === 1 ? 'w-full' : i === 2 ? 'w-5/6' : 'w-4/5'
-            }`} />
-          </div>
-        ))}
-      </div>
-    );
+    return <SkeletonReportViewer />;
   }
 
   return (
@@ -86,7 +78,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
       <div className="card p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <h2 className="text-lg font-semibold text-foreground">Executive Report</h2>
+            <SectionTitle>Executive Report</SectionTitle>
             <div className="h-2 w-32 bg-slate-200 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-lime-500"
@@ -96,15 +88,21 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" onClick={handleCopy}>
-              <Copy className="w-4 h-4 mr-2" />
-              Copy
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleDownload}>
-              <Download className="w-4 h-4 mr-2" />
-              Download
-            </Button>
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={handleCopy}
+              title="Copy to clipboard"
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleDownload}
+              title="Download as Markdown"
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
@@ -170,7 +168,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
             className="lg:col-span-4"
           >
             <div className="sticky top-24">
-                <h3 className="font-semibold text-foreground text-base mb-3 pl-3">ON THIS PAGE</h3>
+                <Label className="mb-3 pl-3">ON THIS PAGE</Label>
                 <nav className="border-l-2 border-slate-200">
                   {headings.map((heading) => (
                     <a
