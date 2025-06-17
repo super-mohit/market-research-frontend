@@ -1,17 +1,19 @@
-// src/pages/ResearchPage.tsx - SIMPLE VERSION THAT WORKS
+// src/pages/ResearchPage.tsx
 import React, { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Loader, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
+
 import { Header } from '../components/layout/Header';
 import { useJobStream } from '../hooks/api/useJobStream';
 import { useResearchStore } from '../store/useResearchStore';
-import toast from 'react-hot-toast';
+import { researchApi } from '../services/researchApi'; // <-- IMPORT THE API SERVICE
 
 export const ResearchPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
-  const { isJobCompleted, setCurrentJob, resetJobStatus } = useResearchStore();
+  const { isJobCompleted, setJobCompleted, resetJobStatus, setCurrentJob } = useResearchStore();
   const hasRedirectedRef = useRef(false);
 
   // Connect to SSE
@@ -45,37 +47,38 @@ export const ResearchPage: React.FC = () => {
     }
   }, [isJobCompleted, jobId, navigate]);
 
-  // Fallback polling (safety net)
+  // Fallback polling (safety net) - NOW CORRECTED
   useEffect(() => {
     if (!jobId || isJobCompleted) return;
 
     const pollForCompletion = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/research/status/${jobId}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.status === 'completed' && !hasRedirectedRef.current) {
-            console.log('🔧 Fallback polling detected completion');
-            hasRedirectedRef.current = true;
-            toast.success('Research complete! (backup detection)');
-            navigate(`/dashboard/${jobId}`);
-          }
+        // Use the centralized, environment-aware API service
+        const data = await researchApi.getJobStatus(jobId);
+        
+        if (data.status === 'completed' && !isJobCompleted) {
+          console.log('🔧 Fallback polling detected completion');
+          setJobCompleted(); // Set completion in the store, which triggers the redirect effect
         }
       } catch (error) {
         console.warn('Polling error:', error);
       }
     };
 
-    // Start polling after 30 seconds as backup
-    const pollTimeout = setTimeout(() => {
-      const pollInterval = setInterval(pollForCompletion, 5000);
-      
-      // Stop polling after 5 minutes
-      setTimeout(() => clearInterval(pollInterval), 300000);
-    }, 30000);
+    // Start polling after 30 seconds as a backup
+    const pollInterval = setInterval(pollForCompletion, 10000); // Poll every 10 seconds
 
-    return () => clearTimeout(pollTimeout);
-  }, [jobId, isJobCompleted, navigate]);
+    // Stop polling if the job completes or after 5 minutes
+    const timeoutId = setTimeout(() => {
+      console.log('Polling timeout reached. Stopping.');
+      clearInterval(pollInterval);
+    }, 300000); // 5 minutes
+
+    return () => {
+      clearInterval(pollInterval);
+      clearTimeout(timeoutId);
+    };
+  }, [jobId, isJobCompleted, setJobCompleted]);
 
   if (!jobId) {
     return (
