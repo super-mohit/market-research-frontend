@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    /* Use a very light gray for the body to make white cards pop */
+    @apply bg-slate-50 text-foreground font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* This will be our standard card style */
+  .card {
+    @apply bg-card text-card-foreground border rounded-xl shadow-sm;
+  }
+
+  /* Scrollbar for light theme */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #c7c7c7 transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #d1d5db; /* A light gray */
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #b3b9c4;
+  }
+}
+
+/* HIGH-CONTRAST MARKDOWN STYLES */
+.markdown-content {
+  @apply text-gray-dark leading-relaxed;
+}
+
+.markdown-content h1 {
+  @apply text-3xl font-bold mb-6 text-foreground border-b border-border pb-2;
+}
+
+.markdown-content h2 {
+  @apply text-2xl font-semibold mb-4 text-foreground mt-8;
+}
+
+.markdown-content h3 {
+  @apply text-xl font-medium mb-3 text-foreground mt-6;
+}
+
+.markdown-content p, 
+.markdown-content li {
+  @apply mb-4 text-gray-dark;
+}
+
+.markdown-content ul, .markdown-content ol {
+  @apply mb-4 ml-6 space-y-2;
+}
+
+.markdown-content blockquote {
+  @apply border-l-4 border-lime-500 pl-4 italic text-lime-800 bg-lime-500/10 py-2 my-4 rounded-r;
+}
+
+.markdown-content table {
+  @apply w-full border-collapse border border-border rounded-lg overflow-hidden my-4;
+}
+
+.markdown-content th {
+  @apply bg-muted border border-border px-4 py-2 text-foreground font-semibold text-left;
+}
+
+.markdown-content td {
+  @apply border border-border px-4 py-2 text-gray-dark;
+}
+
+.markdown-content code {
+  @apply bg-muted px-2 py-1 rounded text-sm font-mono text-lime-800;
+}
+
+.markdown-content pre {
+  @apply bg-muted rounded-lg p-4 overflow-x-auto my-4;
+}
+
+.markdown-content pre code {
+  @apply bg-transparent p-0;
+}
