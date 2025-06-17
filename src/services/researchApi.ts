@@ -140,4 +140,12 @@ export const researchApi = {
     );
     return response.data;
   },
+
+  // +++ NEW: Get Job History +++
+  async getJobHistory(): Promise<{ jobs: Array<{ id: string; original_query: string; status: string; created_at: string }> }> {
+    const response = await apiClient.get(
+      '/api/research/history' // No params needed, user is identified by token
+    );
+    return response.data;
+  },
 }; 

@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Loader } from 'lucide-react';
 import { format } from 'date-fns';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatMessage } from '../../types';
 import { Button } from '../ui/Button';
 import { TextArea } from '../ui/TextArea';
@@ -146,15 +148,23 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     )}
                   </div>
                   
-                  <div className={`flex-1 max-w-xs ${
+                  <div className={`flex-1 max-w-lg ${
                     message.type === 'user' ? 'text-right' : ''
                   }`}>
-                    <div className={`inline-block p-3 rounded-lg text-sm ${
+                    <div className={`inline-block p-3 rounded-lg text-sm text-left ${
                       message.type === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-foreground'
                     }`}>
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      {message.type === 'assistant' ? (
+                        <div className="markdown-content">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                      )}
                       
                       {/* Safe Citation Rendering */}
                       {message.citations && Array.isArray(message.citations) && message.citations.length > 0 && (

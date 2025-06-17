@@ -1,17 +1,20 @@
 // src/hooks/api/useJobStream.ts - SIMPLIFIED FIX
 import { useEffect, useRef, useCallback } from 'react';
 import { useResearchStore } from '../../store/useResearchStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { API_CONFIG } from '../../config/api';
 
 export const useJobStream = (jobId: string | undefined) => {
   const { setJobCompleted } = useResearchStore();
   const eventSourceRef = useRef<EventSource | null>(null);
+  const token = useAuthStore.getState().token;
 
   const connect = useCallback(() => {
-    if (!jobId || eventSourceRef.current) return;
+    if (!jobId || eventSourceRef.current || !token) return;
 
     console.log(`🔌 Connecting to SSE for job ${jobId}`);
-    const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.RESEARCH_STREAM(jobId)}`;
+    const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.RESEARCH_STREAM(jobId)}?token=${token}`;
+    
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
 
@@ -49,7 +52,7 @@ export const useJobStream = (jobId: string | undefined) => {
       eventSourceRef.current = null;
     };
 
-  }, [jobId, setJobCompleted]);
+  }, [jobId, setJobCompleted, token]);
 
   const cleanup = useCallback(() => {
     if (eventSourceRef.current) {

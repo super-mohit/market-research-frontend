@@ -1,17 +1,19 @@
 // src/pages/DashboardPage.tsx
 import React, { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Database, Brain, Loader, AlertTriangle } from 'lucide-react';
+import { FileText, Database, Brain, Loader, AlertTriangle, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { Header } from '../components/layout/Header';
+import { Button } from '../components/ui/Button';
 import { ReportViewer } from '../components/dashboard/ReportViewer';
 import { StructuredDataViewer } from '../components/dashboard/StructuredDataViewer';
 import { ChatInterface } from '../components/dashboard/ChatInterface';
 import { useJobResult, QUERY_KEYS } from '../hooks/api/useResearchQueries';
 import { useChatStore } from '../store/useChatStore';
+import { useAuthStore } from '../store/useAuthStore';
 import { researchApi, ResearchResultResponse } from '../services/researchApi'; // Import API service and type
 
 const TABS = [
@@ -22,6 +24,9 @@ const TABS = [
 
 export const DashboardPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+  
   if (!jobId) {
       return <div className="text-center p-8">Invalid Job ID.</div>;
   }
@@ -47,6 +52,12 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     setCurrentJobId(jobId);
   }, [jobId, setCurrentJobId]);
+
+  // Add logout handler
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   // --- CORRECTED POLLING LOGIC ---
   useEffect(() => {
@@ -174,7 +185,19 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header title="Research Dashboard" />
+      <Header title="Research Dashboard">
+        <div className="flex items-center space-x-2">
+          <Link to="/new-research">
+            <Button variant="outline" size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              New Report
+            </Button>
+          </Link>
+          <Button onClick={handleLogout} variant="ghost" size="sm">
+            Logout
+          </Button>
+        </div>
+      </Header>
       
       <main className="flex-1 max-w-screen-xl w-full mx-auto px-6 py-8 flex flex-col">
         <div className="flex justify-center border-b border-border mb-8">

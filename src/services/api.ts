@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { API_CONFIG } from '../config/api';
+import { useAuthStore } from '../store/useAuthStore'; // <-- Import the store
 
 // Create axios instance
 export const apiClient = axios.create({
@@ -10,9 +11,14 @@ export const apiClient = axios.create({
   },
 });
 
-// Request interceptor
+// --- MODIFIED: Add a request interceptor ---
 apiClient.interceptors.request.use(
   (config) => {
+    // Get the token from the Zustand store
+    const token = useAuthStore.getState().token;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
