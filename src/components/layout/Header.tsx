@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import supervityLogo from '../../assets/supervity-logo.svg';
 
 interface HeaderProps {
   title?: string;
@@ -20,7 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-screen-xl mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3">
-            <img src="/supervity-logo.svg" alt="Supervity Logo" className="h-8 w-auto" />
+            <img src={supervityLogo} alt="Supervity Logo" className="h-8 w-auto" />
           </Link>
           
           {children && (

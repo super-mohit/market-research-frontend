@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader, Search, FileText, Building, CheckCircle } from 'lucide-react';
 import { LoadingStage } from '../../types';
+import supervityLogomark from '../../assets/supervity-logomark.svg';
 
 interface LiveResearchConsoleProps {
   stages: LoadingStage[];
@@ -13,7 +14,7 @@ interface LiveResearchConsoleProps {
 const STAGE_ICONS: { [key: string]: React.ElementType } = {
   planning: Search,
   searching: FileText,
-  synthesizing: () => <img src="/supervity-logomark.svg" alt="Supervity AI" className="w-5 h-5" />,
+  synthesizing: () => <img src={supervityLogomark} alt="Supervity AI" className="w-5 h-5" />,
   extracting: Building,
   compiling: CheckCircle,
 };
@@ -97,7 +98,7 @@ export const LoadingStages: React.FC<LiveResearchConsoleProps> = ({
               isCompleted ? 'bg-lime-500 shadow-lg shadow-lime-500/50' : 'bg-lime-500/90 shadow-lg shadow-lime-500/30'
             }`}
           >
-            <img src="/supervity-logomark.svg" alt="Supervity" className="w-10 h-10" />
+            <img src={supervityLogomark} alt="Supervity" className="w-10 h-10" />
           </motion.div>
           <motion.h1 
             className="text-3xl font-bold text-foreground mb-2"

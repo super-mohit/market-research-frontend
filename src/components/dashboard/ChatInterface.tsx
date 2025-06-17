@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import { ChatMessage } from '../../types';
 import { Button } from '../ui/Button';
 import { TextArea } from '../ui/TextArea';
+import supervityLogomark from '../../assets/supervity-logomark.svg';
 
 interface ChatInterfaceProps {
   jobId: string;
@@ -116,7 +117,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               className="w-20 h-20 bg-lime-500/20 rounded-2xl flex items-center justify-center mb-6 relative"
             >
               <div className="w-16 h-16 bg-lime-500 rounded-xl flex items-center justify-center">
-                <img src="/supervity-logomark.svg" alt="Supervity Analyst" className="w-10 h-10" />
+                <img src={supervityLogomark} alt="Supervity Analyst" className="w-10 h-10" />
               </div>
               {!isRagReady && (
                 <motion.div
@@ -189,7 +190,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     {message.type === 'user' ? (
                       <User className="w-4 h-4" />
                     ) : (
-                      <img src="/supervity-logomark.svg" alt="Supervity Analyst" className="w-5 h-5" />
+                      <img src={supervityLogomark} alt="Supervity Analyst" className="w-5 h-5" />
                     )}
                   </div>
                   
@@ -275,7 +276,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 className="flex items-start space-x-3"
               >
                 <div className="flex-shrink-0 w-8 h-8 bg-lime-500 rounded-full flex items-center justify-center">
-                  <img src="/supervity-logomark.svg" alt="Supervity Analyst" className="w-5 h-5" />
+                  <img src={supervityLogomark} alt="Supervity Analyst" className="w-5 h-5" />
                 </div>
                 <div className="bg-white border border-slate-200 rounded-xl p-4">
                   <div className="flex items-center space-x-1">

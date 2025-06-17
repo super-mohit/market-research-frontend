@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '../store/useAuthStore'; 
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import supervityLogo from '../assets/supervity-logo.svg';
 
 export const SignupPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -50,7 +51,7 @@ export const SignupPage: React.FC = () => {
       
       <form onSubmit={handleSubmit} className="card p-8 w-full max-w-sm space-y-6 relative z-10 backdrop-blur-sm bg-white/80 border border-white/20">
         <div className="text-center">
-          <img src="/supervity-logo.svg" alt="Supervity Logo" className="h-12 w-auto mx-auto mb-6" />
+          <img src={supervityLogo} alt="Supervity Logo" className="h-12 w-auto mx-auto mb-6" />
           <h1 className="text-2xl font-bold text-slate-900 mb-2">Join Supervity</h1>
           <p className="text-slate-600 text-sm">Start your market intelligence journey</p>
         </div>
