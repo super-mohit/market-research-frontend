@@ -17,11 +17,12 @@ const authApi = {
     return response.data;
   },
   // You'd add a signup function here too
-  signup: async (email: string, password: string, name: string) => {
+  signup: async (email: string, password: string, name: string, companyName: string) => {
     const response = await apiClient.post('/api/auth/signup', {
       email,
       password,
       name,
+      company_name: companyName,
     });
     return response.data;
   },
@@ -32,7 +33,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
+  signup: (email: string, password: string, name: string, companyName: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
   // you can add user profile info here as well
@@ -57,10 +58,10 @@ export const useAuthStore = create<AuthState>()(
           throw error;
         }
       },
-      signup: async (email: string, password: string, name: string) => {
+      signup: async (email: string, password: string, name: string, companyName: string) => {
         set({ isLoading: true, error: null });
         try {
-          const { access_token } = await authApi.signup(email, password, name);
+          const { access_token } = await authApi.signup(email, password, name, companyName);
           set({ token: access_token, isLoading: false, error: null });
         } catch (error) {
           set({

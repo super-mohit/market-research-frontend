@@ -23,6 +23,7 @@ const isBusinessEmail = (email: string): boolean => {
 
 export const SignupPage: React.FC = () => {
   const [name, setName] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -63,7 +64,7 @@ export const SignupPage: React.FC = () => {
     }
     
     try {
-      await signup(email, password, name);
+      await signup(email, password, name, companyName);
       toast.success('Account created successfully!');
       navigate('/'); // Navigate to dashboard on success
     } catch (error) {
@@ -110,6 +111,14 @@ export const SignupPage: React.FC = () => {
               type="text" 
               value={name} 
               onChange={(e) => setName(e.target.value)} 
+              required 
+              className="focus:ring-lime-500 focus:border-lime-500"
+            />
+            <Input 
+              label="Company Name" 
+              type="text" 
+              value={companyName} 
+              onChange={(e) => setCompanyName(e.target.value)} 
               required 
               className="focus:ring-lime-500 focus:border-lime-500"
             />
