@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Calendar, Building, ChevronDown, ChevronRight, Copy, Quote } from 'lucide-react';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import { StructuredDataItem } from '../../types';
 import { Badge } from '../ui/Badge';
 import { CardTitle, BodyText, CaptionText } from '../ui/Typography';
@@ -46,8 +47,9 @@ export const DataCard: React.FC<DataCardProps> = ({ item }) => {
   const handleCopySummary = async () => {
     try {
       await navigator.clipboard.writeText(item.summary);
-      // Could add toast notification here
+      toast.success('Summary copied to clipboard!');
     } catch (err) {
+      toast.error('Failed to copy summary.');
       console.error('Failed to copy summary:', err);
     }
   };
@@ -56,8 +58,9 @@ export const DataCard: React.FC<DataCardProps> = ({ item }) => {
     const citation = `${item.title} (${formatDate(item.date)}). ${item.source_url}`;
     try {
       await navigator.clipboard.writeText(citation);
-      // Could add toast notification here
+      toast.success('Citation copied to clipboard!');
     } catch (err) {
+      toast.error('Failed to copy citation.');
       console.error('Failed to copy citation:', err);
     }
   };

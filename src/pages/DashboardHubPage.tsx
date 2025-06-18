@@ -456,6 +456,7 @@ export const DashboardHubPage: React.FC = () => {
                   {filteredAndSortedJobs.map((job, index) => (
                     <motion.div
                       key={job.id}
+                      layout // THE MAGIC PROP!
                       variants={{
                         hidden: { y: 20, opacity: 0 },
                         visible: { y: 0, opacity: 1 }

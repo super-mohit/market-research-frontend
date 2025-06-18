@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Download, Copy, ExternalLink } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import toast from 'react-hot-toast';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { SkeletonReportViewer } from '../ui/Skeleton';
@@ -41,22 +42,29 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(markdown);
-      // Could add toast notification here
+      toast.success('Report copied to clipboard!');
     } catch (err) {
+      toast.error('Failed to copy report.');
       console.error('Failed to copy:', err);
     }
   };
 
   const handleDownload = () => {
-    const blob = new Blob([markdown], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `research-report-${new Date().toISOString().split('T')[0]}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `research-report-${new Date().toISOString().split('T')[0]}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Report downloaded successfully!');
+    } catch (err) {
+      toast.error('Failed to download report.');
+      console.error('Failed to download:', err);
+    }
   };
 
   // Function to handle Table of Contents navigation

@@ -78,6 +78,7 @@ export default {
         'slide-up': 'slideUp 0.4s ease-out',
         'pulse-lime': 'pulseLime 2s infinite',
         'glow': 'glow 2s ease-in-out infinite alternate',
+        'spin-slow': 'spin 3s linear infinite',
       },
       keyframes: {
         fadeIn: {

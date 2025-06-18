@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
+import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { ReportViewer } from '../components/dashboard/ReportViewer';
 import { StructuredDataViewer } from '../components/dashboard/StructuredDataViewer';
 import { ChatInterface } from '../components/dashboard/ChatInterface';
@@ -126,6 +127,25 @@ export const DashboardPage: React.FC = () => {
     };
   }, [jobId, ragStatus, queryClient]); // Dependencies ensure this effect runs when needed
 
+
+  // Map backend status to our component's status prop
+  const getIndicatorStatus = () => {
+    // This logic assumes `ragStatus` is being correctly polled and updated in `jobResult`.
+    if (!jobResult?.metadata?.ragInfo?.upload_requested) {
+      return 'idle'; // RAG was not requested for this job
+    }
+    
+    switch (ragStatus) {
+      case 'pending_upload':
+        return 'pending';
+      case 'uploaded':
+        return 'ready';
+      case 'failed':
+        return 'failed';
+      default:
+        return 'idle'; // 'checking', 'not_requested', etc.
+    }
+  };
 
   const handleSendMessage = (message: string) => {
     const collectionName = jobResult?.metadata?.ragInfo?.collection_name;
@@ -265,6 +285,13 @@ export const DashboardPage: React.FC = () => {
                 )}
                 <tab.icon className="w-5 h-5" />
                 <span>{tab.label}</span>
+                
+                {/* Add StatusIndicator for the chat tab */}
+                {tab.id === 'chat' && (
+                  <div className="ml-2">
+                    <StatusIndicator status={getIndicatorStatus()} />
+                  </div>
+                )}
               </button>
             ))}
           </nav>

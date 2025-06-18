@@ -150,17 +150,19 @@ export const StructuredDataViewer: React.FC<StructuredDataViewerProps> = ({
               ))
             ) : (
               <motion.div 
-                className="text-center py-16 text-muted-foreground col-span-full"
+                className="text-center py-16 text-muted-foreground col-span-full flex flex-col items-center"
                 variants={{
                   hidden: { y: 20, opacity: 0 },
                   visible: { y: 0, opacity: 1 }
                 }}
               >
-                <div className="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <FileText className="w-8 h-8 text-slate-400" />
+                <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6 border">
+                  <FileText className="w-10 h-10 text-slate-400" />
                 </div>
-                <CardTitle className="mb-2">No items found</CardTitle>
-                <BodyText color="secondary">No data available for this category yet.</BodyText>
+                <CardTitle className="mb-2">No Data For This Category</CardTitle>
+                <BodyText color="secondary" className="max-w-sm">
+                  The research agent did not find any relevant items for "{activeTab}" based on your query.
+                </BodyText>
               </motion.div>
             )}
           </motion.div>
