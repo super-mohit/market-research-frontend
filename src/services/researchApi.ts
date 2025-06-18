@@ -156,8 +156,5 @@ export const researchApi = {
     });
   },
 
-  // +++ NEW: Email Report +++
-  async emailReport(jobId: string) {
-    return apiClient.post(`/api/research/${jobId}/email-report`);
-  },
+
 }; 
