@@ -24,84 +24,61 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen relative overflow-hidden">
-      {/* Enhanced background with Supervity brand colors */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        {/* Animated gradient orbs using brand colors */}
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-r from-lime-400 to-lime-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-gradient-to-r from-blue-soft to-cyan-bright rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-gradient-to-r from-cyan-bright to-blue-soft rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
-        
-        {/* Dynamic pattern overlay using lime green */}
-        <div className="absolute inset-0 opacity-[0.06]">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="hexagon" width="60" height="60" patternUnits="userSpaceOnUse">
-                <polygon points="30,5 50,20 50,40 30,55 10,40 10,20" fill="none" stroke="#85c20b" strokeWidth="1"/>
-                <circle cx="30" cy="30" r="2" fill="#85c20b"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hexagon)" />
-          </svg>
-        </div>
-        
-        {/* Floating elements using brand colors */}
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-lime-500 rounded-full animate-bounce animation-delay-1000"></div>
-        <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-blue-soft rounded-full animate-bounce animation-delay-3000"></div>
-        <div className="absolute top-1/2 right-1/3 w-1 h-1 bg-cyan-bright rounded-full animate-ping animation-delay-2000"></div>
+    <div className="flex items-center justify-center min-h-screen relative overflow-hidden bg-slate-50">
+      {/* Premium background with subtle pattern */}
+      <div className="absolute inset-0 z-0">
+        <div 
+          className="absolute inset-0 opacity-[0.04]" 
+          style={{
+            backgroundImage: `radial-gradient(${'#c7c7c7'} 1px, transparent 1px)`,
+            backgroundSize: `20px 20px`,
+          }}
+        />
+        <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-lime-500/20 to-transparent rounded-full blur-3xl" />
+        <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-tl from-blue-soft/20 to-transparent rounded-full blur-3xl" />
       </div>
       
       {/* Main form with enhanced styling */}
       <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md mx-4">
-        <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/30 p-8 space-y-6 relative overflow-hidden">
-          {/* Card background decoration using brand colors */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-lime-500 via-blue-soft to-cyan-bright"></div>
-          <div className="absolute -top-6 -right-6 w-20 h-20 bg-gradient-to-br from-lime-400/15 to-blue-soft/15 rounded-full blur-lg"></div>
-          <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-br from-cyan-bright/15 to-lime-500/15 rounded-full blur-lg"></div>
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl border border-white/30 p-8 space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-lime-500"></div>
           
           <div className="text-center relative">
-            <div className="relative inline-block mb-6">
-              <img src={supervityLogo} alt="Supervity Logo" className="h-12 w-auto mx-auto relative z-10" />
-              <div className="absolute inset-0 bg-lime-500/15 rounded-full blur-md transform scale-150"></div>
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-navy-900 via-lime-600 to-blue-soft bg-clip-text text-transparent mb-2">
+            <img src={supervityLogo} alt="Supervity Logo" className="h-10 w-auto mx-auto mb-6 relative z-10" />
+            <h1 className="text-3xl font-bold text-navy-900 mb-2">
               Welcome Back
             </h1>
             <p className="text-gray-dark text-sm">Access your market intelligence platform</p>
           </div>
           
           {error && (
-            <div className="text-sm text-coral bg-coral/10 p-3 rounded-lg border border-coral/20 backdrop-blur-sm">
+            <div className="text-sm text-coral bg-coral/10 p-3 rounded-lg border border-coral/20">
               {error}
             </div>
           )}
           
           <div className="space-y-4">
-            <div className="relative">
-              <Input 
-                label="Email" 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                required 
-                className="transition-all duration-300 focus:scale-[1.02] focus:ring-lime-500 focus:border-lime-500"
-              />
-            </div>
-            <div className="relative">
-              <Input 
-                label="Password" 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required 
-                className="transition-all duration-300 focus:scale-[1.02] focus:ring-lime-500 focus:border-lime-500"
-              />
-            </div>
+            <Input 
+              label="Email" 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+              className="focus:ring-lime-500 focus:border-lime-500"
+            />
+            <Input 
+              label="Password" 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+              className="focus:ring-lime-500 focus:border-lime-500"
+            />
           </div>
           
           <Button 
             type="submit" 
-            className="w-full bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 text-white transform hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-xl" 
+            className="w-full text-white" 
             isLoading={isLoading}
           >
             Sign In
@@ -112,7 +89,7 @@ export const LoginPage: React.FC = () => {
               No account?{' '}
               <Link 
                 to="/signup" 
-                className="text-transparent bg-gradient-to-r from-lime-600 to-blue-soft bg-clip-text hover:from-lime-700 hover:to-blue-600 font-medium transition-all duration-300 hover:underline"
+                className="font-medium text-lime-600 hover:text-lime-500 transition-colors"
               >
                 Sign up
               </Link>

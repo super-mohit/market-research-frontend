@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { apiClient } from '../services/api';
+// Import other stores for cleanup during logout
+import { useResearchStore } from './useResearchStore';
+import { useChatStore } from './useChatStore';
 
 // This is where you'll define the auth-related API calls
 const authApi = {
@@ -68,7 +71,17 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       logout: () => {
+        console.log('Clearing authentication and application state.');
+        
+        // Clear all relevant application state
+        useResearchStore.getState().clearJob();
+        // Clear chat state manually since Zustand doesn't have a simple "reset"
+        useChatStore.setState({ messagesByJob: {}, currentJobId: undefined, isTyping: false });
+
+        // Finally, clear the auth token
         set({ token: null, error: null });
+        
+        // Note: React Query cache will be cleared by the useSyncAuth hook or on page reload
       },
       clearError: () => set({ error: null }),
     }),

@@ -213,7 +213,7 @@ export const DashboardPage: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'report':
-        return <ReportViewer markdown={jobResult.final_report_markdown || ''} />;
+        return <ReportViewer markdown={jobResult.final_report_markdown || ''} jobId={jobId} />;
       case 'data':
         return <StructuredDataViewer data={jobResult.extracted_data} />;
       case 'chat':

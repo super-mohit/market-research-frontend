@@ -148,4 +148,16 @@ export const researchApi = {
     );
     return response.data;
   },
+
+  // +++ NEW: Download PDF +++
+  async downloadPdf(jobId: string) {
+    return apiClient.get(`/api/research/${jobId}/download-pdf`, {
+      responseType: 'blob', // Important for file downloads
+    });
+  },
+
+  // +++ NEW: Email Report +++
+  async emailReport(jobId: string) {
+    return apiClient.post(`/api/research/${jobId}/email-report`);
+  },
 }; 

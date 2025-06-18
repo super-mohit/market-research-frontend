@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Copy, ExternalLink } from 'lucide-react';
+import { DownloadCloud, Copy, ExternalLink, Mail, FileDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import toast from 'react-hot-toast';
@@ -8,22 +8,29 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { SkeletonReportViewer } from '../ui/Skeleton';
 import { SectionTitle, Label } from '../ui/Typography';
+import { Modal } from '../ui/Modal';
+import { researchApi } from '../../services/researchApi';
 
 interface ReportViewerProps {
   markdown: string;
   isLoading?: boolean;
   onCiteClick?: (url: string) => void;
+  jobId: string;
 }
 
 export const ReportViewer: React.FC<ReportViewerProps> = ({
   markdown,
   isLoading = false,
   onCiteClick,
+  jobId,
 }) => {
   const [readingProgress, setReadingProgress] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isEmailing, setIsEmailing] = useState(false);
 
   // Extract headings for table of contents
-  const headings = React.useMemo(() => {
+  const headings = useMemo(() => {
     const headingRegex = /^(#{1,3})\s+(.+)$/gm;
     const matches = [];
     let match;
@@ -49,21 +56,43 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleActualDownload = async () => {
+    setIsDownloading(true);
     try {
-      const blob = new Blob([markdown], { type: 'text/markdown' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `research-report-${new Date().toISOString().split('T')[0]}.md`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const response = await researchApi.downloadPdf(jobId);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const filename = `Supervity_Report_${jobId.substring(0, 8)}.pdf`;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
       toast.success('Report downloaded successfully!');
     } catch (err) {
-      toast.error('Failed to download report.');
-      console.error('Failed to download:', err);
+      toast.error('Failed to download PDF.');
+      console.error('Download error:', err);
+    } finally {
+      setIsDownloading(false);
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleEmailReport = async () => {
+    setIsEmailing(true);
+    try {
+      await researchApi.emailReport(jobId);
+      toast.success('Your report is on its way to your email!');
+    } catch (err) {
+      toast.error('Failed to send email.');
+      console.error('Email error:', err);
+    } finally {
+      setIsEmailing(false);
+      setIsModalOpen(false);
     }
   };
 
@@ -81,124 +110,158 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Action Bar */}
-      <div className="card p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <SectionTitle>Executive Report</SectionTitle>
-            <div className="h-2 w-32 bg-slate-200 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-lime-500"
-                initial={{ width: 0 }}
-                animate={{ width: `${readingProgress}%` }}
-              />
+    <>
+      <div className="space-y-6">
+        {/* Action Bar */}
+        <div className="card p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <SectionTitle>Executive Report</SectionTitle>
+              <div className="h-2 w-32 bg-slate-200 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-lime-500"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${readingProgress}%` }}
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={handleCopy}
+                title="Copy to clipboard"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleDownloadClick}
+                title="Download or Email Report"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors"
+              >
+                <DownloadCloud className="w-4 h-4" />
+              </button>
             </div>
           </div>
-          
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={handleCopy}
-              title="Copy to clipboard"
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors"
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Report Content - Now on the left for primary focus */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={headings.length > 0 ? "lg:col-span-8" : "lg:col-span-12"}
+          >
+            <div className="card p-8">
+              <div className="markdown-content">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({ children, ...props }) => (
+                      <h1 id={String(children).toLowerCase().replace(/[^a-z0-9]/g, '-')} {...props}>
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({ children, ...props }) => (
+                      <h2 id={String(children).toLowerCase().replace(/[^a-z0-9]/g, '-')} {...props}>
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children, ...props }) => (
+                      <h3 id={String(children).toLowerCase().replace(/[^a-z0-9]/g, '-')} {...props}>
+                        {children}
+                      </h3>
+                    ),
+                    a: ({ href, children, ...props }) => (
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-lime-600 hover:text-lime-500 hover:underline inline-flex items-center"
+                        onClick={(e) => {
+                          if (onCiteClick && href) {
+                            e.preventDefault();
+                            onCiteClick(href);
+                          }
+                        }}
+                        {...props}
+                      >
+                        {children}
+                        <ExternalLink className="w-3 h-3 ml-1" />
+                      </a>
+                    ),
+                  }}
+                >
+                  {markdown}
+                </ReactMarkdown>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Table of Contents - On the right */}
+          {headings.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="lg:col-span-4"
             >
-              <Copy className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleDownload}
-              title="Download as Markdown"
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-            </button>
-          </div>
+              <div className="sticky top-24">
+                  <Label className="mb-3 pl-3">ON THIS PAGE</Label>
+                  <nav className="border-l-2 border-slate-200">
+                    {headings.map((heading) => (
+                      <a
+                        key={heading.id}
+                        href={`#${heading.id}`}
+                        onClick={(e) => handleTocClick(e, heading.id)}
+                        className={`block py-1.5 text-sm hover:text-primary hover:border-primary transition-colors duration-200 border-l-2 -ml-px
+                          ${
+                            heading.level === 1 
+                              ? 'font-medium text-muted-foreground pl-4 border-transparent' 
+                              : 'text-slate-500 pl-8 border-transparent'
+                          }
+                        `}
+                      >
+                        {heading.text}
+                      </a>
+                    ))}
+                  </nav>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Report Content - Now on the left for primary focus */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={headings.length > 0 ? "lg:col-span-8" : "lg:col-span-12"}
-        >
-          <div className="card p-8">
-            <div className="markdown-content">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  h1: ({ children, ...props }) => (
-                    <h1 id={String(children).toLowerCase().replace(/[^a-z0-9]/g, '-')} {...props}>
-                      {children}
-                    </h1>
-                  ),
-                  h2: ({ children, ...props }) => (
-                    <h2 id={String(children).toLowerCase().replace(/[^a-z0-9]/g, '-')} {...props}>
-                      {children}
-                    </h2>
-                  ),
-                  h3: ({ children, ...props }) => (
-                    <h3 id={String(children).toLowerCase().replace(/[^a-z0-9]/g, '-')} {...props}>
-                      {children}
-                    </h3>
-                  ),
-                  a: ({ href, children, ...props }) => (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-lime-600 hover:text-lime-500 hover:underline inline-flex items-center"
-                      onClick={(e) => {
-                        if (onCiteClick && href) {
-                          e.preventDefault();
-                          onCiteClick(href);
-                        }
-                      }}
-                      {...props}
-                    >
-                      {children}
-                      <ExternalLink className="w-3 h-3 ml-1" />
-                    </a>
-                  ),
-                }}
-              >
-                {markdown}
-              </ReactMarkdown>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Table of Contents - On the right */}
-        {headings.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-4"
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Export Report">
+        <div className="space-y-4">
+          <p className="text-muted-foreground">Choose your preferred method to receive the report.</p>
+          <Button 
+            variant="outline" 
+            className="w-full justify-start text-left" 
+            onClick={handleActualDownload}
+            isLoading={isDownloading}
+            disabled={isEmailing}
           >
-            <div className="sticky top-24">
-                <Label className="mb-3 pl-3">ON THIS PAGE</Label>
-                <nav className="border-l-2 border-slate-200">
-                  {headings.map((heading) => (
-                    <a
-                      key={heading.id}
-                      href={`#${heading.id}`}
-                      onClick={(e) => handleTocClick(e, heading.id)}
-                      className={`block py-1.5 text-sm hover:text-primary hover:border-primary transition-colors duration-200 border-l-2 -ml-px
-                        ${
-                          heading.level === 1 
-                            ? 'font-medium text-muted-foreground pl-4 border-transparent' 
-                            : 'text-slate-500 pl-8 border-transparent'
-                        }
-                      `}
-                    >
-                      {heading.text}
-                    </a>
-                  ))}
-                </nav>
+            <FileDown className="w-5 h-5 mr-3" />
+            <div>
+              <p className="font-semibold">Download as PDF</p>
+              <p className="text-xs text-muted-foreground">Save the formatted report directly to your device.</p>
             </div>
-          </motion.div>
-        )}
-      </div>
-    </div>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="w-full justify-start text-left" 
+            onClick={handleEmailReport}
+            isLoading={isEmailing}
+            disabled={isDownloading}
+          >
+            <Mail className="w-5 h-5 mr-3" />
+            <div>
+              <p className="font-semibold">Get via Email</p>
+              <p className="text-xs text-muted-foreground">Send a link to the PDF to your registered email.</p>
+            </div>
+          </Button>
+        </div>
+      </Modal>
+    </>
   );
 };

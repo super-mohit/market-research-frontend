@@ -122,10 +122,11 @@ export const DataCard: React.FC<DataCardProps> = ({ item }) => {
           href={item.source_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-md hover:bg-slate-100"
+          className="text-muted-foreground hover:text-primary transition-colors p-1 rounded-md hover:bg-slate-100 relative z-20"
           title="Visit source"
           whileHover={{ scale: 1.1, rotate: 5 }}
           whileTap={{ scale: 0.95 }}
+          onClick={(e) => e.stopPropagation()}
         >
           <ExternalLink className="w-4 h-4" />
         </motion.a>

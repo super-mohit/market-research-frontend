@@ -9,8 +9,12 @@ import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { useSyncAuth } from './hooks/useSyncAuth';
 
 function App() {
+  // Set up the global listener for cross-tab auth changes
+  useSyncAuth();
+
   return (
     <Router>
       <div className="App">
