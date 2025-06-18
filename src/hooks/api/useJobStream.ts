@@ -1,58 +1,64 @@
 // src/hooks/api/useJobStream.ts - SIMPLIFIED FIX
 import { useEffect, useRef, useCallback } from 'react';
 import { useResearchStore } from '../../store/useResearchStore';
-import { useAuthStore } from '../../store/useAuthStore';
 import { API_CONFIG } from '../../config/api';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export const useJobStream = (jobId: string | undefined) => {
-  const { setJobCompleted } = useResearchStore();
+  const { setJobCompleted, addLog, updateJobStatus } = useResearchStore();
+  const token = useAuthStore((state) => state.token);
   const eventSourceRef = useRef<EventSource | null>(null);
-  const token = useAuthStore.getState().token;
 
   const connect = useCallback(() => {
-    if (!jobId || eventSourceRef.current || !token) return;
+    if (!jobId || !token || eventSourceRef.current) return;
 
     console.log(`🔌 Connecting to SSE for job ${jobId}`);
     const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.RESEARCH_STREAM(jobId)}?token=${token}`;
     
-    const eventSource = new EventSource(url);
-    eventSourceRef.current = eventSource;
+    const es = new EventSource(url);
+    eventSourceRef.current = es;
 
-    eventSource.onopen = () => {
-      console.log(`✅ SSE connected for job ${jobId}`);
+    es.onopen = () => {
+      console.log(`✅ SSE connection established for job ${jobId}`);
+      addLog('Live connection to research agent established.');
     };
 
-    // Listen for status updates
-    eventSource.addEventListener('status', (e) => {
-      const data = JSON.parse(e.data);
-      console.log('📊 Status update:', data);
-      
-      // Mark as completed when status is completed
-      if (data.status === 'completed') {
-        console.log('🎉 Job completed via SSE!');
-        setJobCompleted();
+    // Listen for structured status updates
+    es.addEventListener('status', (event) => {
+      try {
+        const statusData = JSON.parse(event.data);
+        console.log('📊 SSE Status update:', statusData);
+        // Update the loading stages in the store
+        updateJobStatus(statusData);
+      } catch (e) {
+        console.error('Failed to parse status event data', e);
       }
     });
 
-    // Listen for result (backup completion trigger)
-    eventSource.addEventListener('result', (e) => {
-      console.log('📋 Result received via SSE!');
+    // Listen for the final result
+    es.addEventListener('result', (event) => {
+      console.log('🎉 SSE Result received! Job is complete.');
+      addLog('Research complete! Preparing dashboard...');
       setJobCompleted();
+      es.close(); // Close the connection, we are done
     });
 
-    eventSource.addEventListener('close', () => {
-      console.log('🔒 SSE connection closed');
-      eventSource.close();
-      eventSourceRef.current = null;
+    // Listen for the generic "close" signal from the backend
+    es.addEventListener('close', (event) => {
+      console.log('🔒 SSE connection closed by server:', event.data);
+      addLog('Live connection closed.');
+      setJobCompleted(); // Also mark as complete on close
+      es.close();
     });
 
-    eventSource.onerror = (error) => {
+    es.onerror = (error) => {
       console.error('❌ SSE Error:', error);
-      eventSource.close();
-      eventSourceRef.current = null;
+      addLog('Error: Lost connection to the research agent.');
+      // Don't mark as complete on error, let polling handle it
+      es.close();
     };
 
-  }, [jobId, setJobCompleted, token]);
+  }, [jobId, token, setJobCompleted, addLog, updateJobStatus]);
 
   const cleanup = useCallback(() => {
     if (eventSourceRef.current) {

@@ -25,59 +25,100 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen relative overflow-hidden">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
-        <div className="absolute inset-0 opacity-[0.03]">
+      {/* Enhanced background with animated gradients */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
+        {/* Animated gradient orbs */}
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-r from-purple-400 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
+        
+        {/* Dynamic pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.08]">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#3b82f6" strokeWidth="1"/>
+              <pattern id="hexagon" width="60" height="60" patternUnits="userSpaceOnUse">
+                <polygon points="30,5 50,20 50,40 30,55 10,40 10,20" fill="none" stroke="#6366f1" strokeWidth="1"/>
+                <circle cx="30" cy="30" r="2" fill="#6366f1"/>
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
+            <rect width="100%" height="100%" fill="url(#hexagon)" />
           </svg>
         </div>
-        <div className="absolute top-10 left-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-600/5 rounded-full blur-3xl"></div>
+        
+        {/* Floating elements */}
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-500 rounded-full animate-bounce animation-delay-1000"></div>
+        <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-purple-500 rounded-full animate-bounce animation-delay-3000"></div>
+        <div className="absolute top-1/2 right-1/3 w-1 h-1 bg-cyan-500 rounded-full animate-ping animation-delay-2000"></div>
       </div>
       
-      <form onSubmit={handleSubmit} className="card p-8 w-full max-w-sm space-y-6 relative z-10 backdrop-blur-sm bg-white/80 border border-white/20">
-        <div className="text-center">
-          <img src={supervityLogo} alt="Supervity Logo" className="h-12 w-auto mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Intelligence Agent Login</h1>
-          <p className="text-slate-600 text-sm">Access your market intelligence platform</p>
-        </div>
-        
-        {error && (
-          <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
-            {error}
+      {/* Main form with enhanced styling */}
+      <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md mx-4">
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8 space-y-6 relative overflow-hidden">
+          {/* Card background decoration */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500"></div>
+          <div className="absolute -top-6 -right-6 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-purple-500/20 rounded-full blur-lg"></div>
+          <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-br from-cyan-400/20 to-blue-500/20 rounded-full blur-lg"></div>
+          
+          <div className="text-center relative">
+            <div className="relative inline-block mb-6">
+              <img src={supervityLogo} alt="Supervity Logo" className="h-12 w-auto mx-auto relative z-10" />
+              <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-md transform scale-150"></div>
+            </div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-2">
+              Welcome Back
+            </h1>
+            <p className="text-slate-600 text-sm">Access your market intelligence platform</p>
           </div>
-        )}
-        
-        <div className="space-y-4">
-          <Input 
-            label="Email" 
-            type="email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            required 
-          />
-          <Input 
-            label="Password" 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
-          />
+          
+          {error && (
+            <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200 backdrop-blur-sm">
+              {error}
+            </div>
+          )}
+          
+          <div className="space-y-4">
+            <div className="relative">
+              <Input 
+                label="Email" 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                required 
+                className="transition-all duration-300 focus:scale-[1.02]"
+              />
+            </div>
+            <div className="relative">
+              <Input 
+                label="Password" 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+                className="transition-all duration-300 focus:scale-[1.02]"
+              />
+            </div>
+          </div>
+          
+          <Button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-xl" 
+            isLoading={isLoading}
+          >
+            Sign In
+          </Button>
+          
+          <div className="text-center">
+            <p className="text-sm text-slate-600">
+              No account?{' '}
+              <Link 
+                to="/signup" 
+                className="text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text hover:from-blue-700 hover:to-purple-700 font-medium transition-all duration-300 hover:underline"
+              >
+                Sign up
+              </Link>
+            </p>
+          </div>
         </div>
-        
-        <Button type="submit" className="w-full" isLoading={isLoading}>
-          Sign In
-        </Button>
-        
-        <p className="text-center text-sm text-slate-600">
-          No account? <Link to="/signup" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">Sign up</Link>
-        </p>
       </form>
     </div>
   );

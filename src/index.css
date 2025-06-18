@@ -58,6 +58,25 @@
   }
 }
 
+@layer utilities {
+  /* Custom animation delay utilities */
+  .animation-delay-1000 {
+    animation-delay: 1s;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-3000 {
+    animation-delay: 3s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+}
+
 /* HIGH-CONTRAST MARKDOWN STYLES */
 .markdown-content {
   @apply text-gray-dark leading-relaxed;

@@ -199,7 +199,7 @@ export const DashboardPage: React.FC = () => {
       case 'chat':
         return (
           <div className="flex justify-center h-full">
-            <div className="w-full max-w-4xl h-[calc(100vh-15rem)]">
+            <div className="w-full max-w-4xl h-[calc(100vh-22rem)] bg-white rounded-t-2xl shadow-lg border border-slate-200">
               <ChatInterface
                 jobId={jobId}
                 messages={messagesByJob[jobId] || []}
@@ -216,11 +216,11 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header title="Research Dashboard">
         <div className="flex items-center space-x-2">
           <Link to="/new-research">
-            <Button variant="outline" size="sm">
+            <Button size="sm">
               <Plus className="w-4 h-4 mr-2" />
               New Report
             </Button>
@@ -237,32 +237,37 @@ export const DashboardPage: React.FC = () => {
           <PageTitle className="mb-2">
             Market Intelligence Report
           </PageTitle>
-          <BodyText color="secondary">
+          <BodyText color="secondary" className="line-clamp-2">
             Research findings for: "{jobResult.original_query}"
           </BodyText>
         </div>
 
-        <div className="flex justify-center border-b border-border mb-8">
-          <div className="flex items-center space-x-1">
+        {/* Tab Navigation - Enhanced Styling */}
+        <div className="border-b border-border mb-8">
+          <nav className="flex items-center space-x-1">
             {TABS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 disabled={tab.id === 'chat' && isChatDisabled}
-                className={`flex items-center space-x-2 px-4 py-3 text-base font-medium border-b-2 transition-all duration-200 rounded-t-lg ${
+                className={`flex items-center space-x-2 px-4 py-3 text-base font-medium border-b-2 transition-all duration-200 rounded-t-lg relative ${
                   activeTab === tab.id 
-                    ? 'border-lime-500 text-foreground bg-lime-500/10' 
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-slate-100/50'
+                    ? 'border-lime-500 text-foreground' 
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 } ${tab.id === 'chat' && isChatDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="activeTabUnderline"
+                    className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-lime-500"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
                 <tab.icon className="w-5 h-5" />
                 <span>{tab.label}</span>
-                {tab.id === 'chat' && isChatDisabled && (
-                  <CaptionText color="secondary" className="ml-2">(Disabled)</CaptionText>
-                )}
               </button>
             ))}
-          </div>
+          </nav>
         </div>
         
         {activeTab === 'chat' && ragInfo?.upload_requested && !canQuery && (
@@ -283,6 +288,7 @@ export const DashboardPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.25 }}
+              className="h-full" // Ensure the container takes up space
             >
               {renderTabContent()}
             </motion.div>

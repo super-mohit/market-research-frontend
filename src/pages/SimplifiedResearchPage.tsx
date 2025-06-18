@@ -64,9 +64,11 @@ export const SimplifiedResearchPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center overflow-hidden">
-      {/* Company Logo Header */}
-      <img src={supervityLogo} alt="Supervity Logo" className="h-10 w-auto mb-4" />
-      <h1 className="text-xl font-medium text-foreground mb-12">Market Intelligence Agent</h1>
+      {/* --- FIX: Grouped header elements --- */}
+      <div className="mb-16">
+        <img src={supervityLogo} alt="Supervity Logo" className="h-10 w-auto mx-auto mb-2" />
+        <h1 className="text-lg font-medium text-muted-foreground">Market Intelligence Agent</h1>
+      </div>
 
       {/* Main Animated Visual */}
       <motion.div
@@ -93,7 +95,7 @@ export const SimplifiedResearchPage: React.FC = () => {
       </motion.div>
 
       {/* Animated Progress Text */}
-      <div className="relative h-12 w-full max-w-lg">
+      <div className="relative h-12 w-full max-w-xl">
         <AnimatePresence mode="wait">
           <motion.h1
             key={isJobCompleted ? 'complete' : currentMessageIndex}
@@ -101,14 +103,16 @@ export const SimplifiedResearchPage: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="absolute inset-0 text-2xl md:text-3xl font-medium text-foreground"
+            className="absolute inset-0 text-3xl font-semibold text-foreground"
           >
             {isJobCompleted ? 'Report Generated!' : progressMessages[currentMessageIndex]}
           </motion.h1>
         </AnimatePresence>
       </div>
 
-      <p className="text-muted-foreground mt-4">This may take a few minutes. You can safely leave this page and come back later.</p>
+      <p className="text-muted-foreground mt-4 max-w-md">
+        This may take a few minutes. We're analyzing thousands of data points to build your custom report.
+      </p>
 
       {/* Footer Branding */}
       <div className="absolute bottom-8 text-sm text-gray-400">
