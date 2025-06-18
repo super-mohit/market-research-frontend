@@ -61,6 +61,8 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
   };
 
   const handleActualDownload = async () => {
+    // Show an initial "preparing" toast
+    const toastId = toast.loading('Preparing your PDF for download...');
     setIsDownloading(true);
     try {
       const response = await researchApi.downloadPdf(jobId);
@@ -72,9 +74,12 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
-      toast.success('Report downloaded successfully!');
+      
+      // Update the toast to success
+      toast.success('Download starting!', { id: toastId });
     } catch (err) {
-      toast.error('Failed to download PDF.');
+      // Update the toast to an error
+      toast.error('Failed to download PDF.', { id: toastId });
       console.error('Download error:', err);
     } finally {
       setIsDownloading(false);
@@ -83,12 +88,16 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
   };
 
   const handleEmailReport = async () => {
+    // Show an initial "sending" toast
+    const toastId = toast.loading('Sending report to your email...');
     setIsEmailing(true);
     try {
       await researchApi.emailReport(jobId);
-      toast.success('Your report is on its way to your email!');
+      // Update the toast to a success message
+      toast.success('Your report is on its way! Please check your inbox shortly.', { id: toastId });
     } catch (err) {
-      toast.error('Failed to send email.');
+      // Update the toast to an error
+      toast.error('Failed to send email. Please try again.', { id: toastId });
       console.error('Email error:', err);
     } finally {
       setIsEmailing(false);
